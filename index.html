@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hackaton</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="container nav-container">
+            <div class="logo">Logis<span>IA</span></div>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="#inicio">Solución</a></li>
+                    <li><a href="#impacto">Impacto</a></li>
+                    <li><a href="#demo">Demo</a></li>
+                </ul>
+            </nav>
+            <div class="nav-actions">
+                <a href="#login" class="btn btn-outline">Acceso</a>
+                <a href="#demo" class="btn btn-primary btn-shine">Demo Gratis</a>
+            </div>
+        </div>
+    </header>
+
+    <section id="inicio" class="hero">
+        <div class="container hero-container">
+            <div class="hero-content">
+                <span class="badge">Nuevo Motor TSP v2.5</span>
+                <h1>Inteligencia Artificial para tu Logística</h1>
+                <p>Automatiza la planeación de tu flota con algoritmos avanzados. Reduce costos operativos, mejora tiempos de entrega y conecta a tus operadores en segundos.</p>
+                <div class="hero-buttons">
+                    <a href="#demo" class="btn btn-primary btn-large btn-shine">Ver Demo en Vivo</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="impacto" class="kpi-section">
+        <div class="container">
+            <div class="kpi-grid">
+                <div class="kpi-card">
+                    <div class="kpi-icon icon-blue">📉</div>
+                    <div class="kpi-data">
+                        <div class="kpi-number">-45<span class="unit">km</span></div>
+                        <div class="kpi-label">Ahorro Promedio por Ruta</div>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon icon-blue">⏱️</div>
+                    <div class="kpi-data">
+                        <div class="kpi-number">2.5<span class="unit">hrs</span></div>
+                        <div class="kpi-label">Tiempo Optimizado Diario</div>
+                    </div>
+                </div>
+                <div class="kpi-card">
+                    <div class="kpi-icon icon-blue">💰</div>
+                    <div class="kpi-data">
+                        <div class="kpi-number">850<span class="unit">MXN</span></div>
+                        <div class="kpi-label">Ahorro Combustible/Día</div>
+                    </div>
+                </div>
+                <div class="kpi-card kpi-highlight">
+                    <div class="kpi-icon icon-green">🍃</div>
+                    <div class="kpi-data">
+                        <div class="kpi-number">-12<span class="unit">%</span></div>
+                        <div class="kpi-label">Reducción CO₂ Estimada</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="como-funciona" class="como-funciona">
+        <div class="container">
+            <div class="section-header">
+                <h2>Un sistema profesional listo para producción</h2>
+                <p>Nuestra plataforma SaaS se integra en minutos sin instalaciones complejas.</p>
+            </div>
+            <div class="grid-tarjetas">
+                <div class="tarjeta">
+                    <div class="tarjeta-head">
+                        <div class="tarjeta-icon">📂</div>
+                        <span class="step-num">Paso 1</span>
+                    </div>
+                    <h3>Entrada Múltiple</h3>
+                    <p>Carga masiva de direcciones vía <b>archivo CSV</b> o envía ubicaciones directamente a nuestro bot corporativo de <b>WhatsApp</b>.</p>
+                </div>
+                <div class="tarjeta">
+                    <div class="tarjeta-head">
+                        <div class="tarjeta-icon">🧠</div>
+                        <span class="step-num">Paso 2</span>
+                    </div>
+                    <h3>Motor de Optimización TSP</h3>
+                    <p>Nuestra IA cruza datos de tráfico en tiempo real, capacidades y ventanas de entrega para diseñar la ruta óptima.</p>
+                </div>
+                <div class="tarjeta">
+                    <div class="tarjeta-head">
+                        <div class="tarjeta-icon">📲</div>
+                        <span class="step-num">Paso 3</span>
+                    </div>
+                    <h3>Despliegue Inmediato</h3>
+                    <p>Tus operadores reciben la ruta paso a paso en <b>Telegram</b> o <b>WhatsApp</b>, incluyendo mapas dinámicos.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="demo" class="demo-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Demo en Vivo: Optimización en CDMX</h2>
+                <p>Compara el impacto visual de nuestro algoritmo de Inteligencia Artificial.</p>
+            </div>
+            <div class="demo-container">
+                <div class="demo-col">
+                    <h4 class="route-title bad-title">Ruta Tradicional (Manual)</h4>
+                    <div class="map-placeholder">
+                        <div class="image-placeholder-text">insertar imagen aqui</div>
+                        <div class="map-overlay bad-overlay">
+                            <span class="stat">Distancia: 120 km</span>
+                            <span class="stat">Tiempo: 4h 30m</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="demo-col">
+                    <h4 class="route-title good-title">Ruta Optimizada LogisIA</h4>
+                    <div class="map-placeholder map-good">
+                        <div class="image-placeholder-text">insertar imagen aqui</div>
+                        <div class="map-overlay good-overlay">
+                            <span class="stat">Distancia: 75 km</span>
+                            <span class="stat">Tiempo: 2h 00m</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="ai-narration">
+                <div class="ai-avatar">🤖 LogisIA Insight</div>
+                <p>"Detecté un embotellamiento en Circuito Interior a las 11:30 AM. He reorganizado las 4 entregas del Norte para realizarlas antes de esa hora, optimizando la ruta y ahorrando 2.5 horas de tiempo total."</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="fat-footer">
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <h3>Logis<span>IA</span></h3>
+                <p>Plataforma SaaS de optimización de rutas logística líder en el mercado mexicano.</p>
+            </div>
+            <div class="footer-links">
+                <h4>Solución</h4>
+                <ul>
+                    <li>Optimización TSP</li>
+                    <li>Métricas de CO₂</li>
+                    <li>WhatsApp API</li>
+                </ul>
+            </div>
+            <div class="footer-links">
+                <h4>Hackatón</h4>
+                <ul>
+                    <li>Bécalos 2025-2026</li>
+                    <li>Reto Traxion</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 LogisIA Prototipo. Hackatón Bécalos. Equipo X.
+        </div>
+    </footer>
+
+</body>
+</html>
