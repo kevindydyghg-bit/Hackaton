@@ -1,176 +1,1437 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hackaton</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Roboto+Mono:wght@700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RouteBot — Optimización Inteligente de Rutas</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0f0d;
+    --bg2: #0f1a14;
+    --bg3: #142019;
+    --green: #00e87a;
+    --green2: #00b85f;
+    --green3: #004d28;
+    --white: #f0f5f2;
+    --muted: #6b8f78;
+    --border: rgba(0,232,122,0.12);
+    --border2: rgba(0,232,122,0.25);
+    --font-display: 'Syne', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* ── GRID NOISE TEXTURE ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,232,122,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,232,122,0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 3rem;
+    background: rgba(10,15,13,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1.25rem;
+    color: var(--green);
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .nav-logo span { color: var(--white); }
+
+  .nav-links {
+    display: flex;
+    gap: 2.5rem;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--green); }
+
+  .nav-cta {
+    background: var(--green);
+    color: var(--bg);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.875rem;
+    padding: 0.6rem 1.4rem;
+    border-radius: 4px;
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    transition: background 0.2s, transform 0.15s;
+  }
+
+  .nav-cta:hover { background: var(--green2); transform: translateY(-1px); }
+
+  /* ── SECTIONS ── */
+  section { position: relative; z-index: 1; }
+
+  /* ── HERO ── */
+  #inicio {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 8rem 3rem 5rem;
+    overflow: hidden;
+  }
+
+  .hero-glow {
+    position: absolute;
+    top: -200px; left: -200px;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(0,232,122,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-glow2 {
+    position: absolute;
+    bottom: -100px; right: -100px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(0,184,95,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(0,232,122,0.08);
+    border: 1px solid var(--border2);
+    border-radius: 100px;
+    padding: 0.35rem 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--green);
+    letter-spacing: 0.06em;
+    margin-bottom: 2rem;
+    width: fit-content;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .hero-tag::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 7vw, 6rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    max-width: 900px;
+    animation: fadeUp 0.6s 0.1s ease both;
+  }
+
+  h1 .accent { color: var(--green); }
+
+  .hero-sub {
+    font-size: 1.2rem;
+    color: var(--muted);
+    max-width: 560px;
+    margin-top: 1.5rem;
+    font-weight: 300;
+    animation: fadeUp 0.6s 0.2s ease both;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2.5rem;
+    flex-wrap: wrap;
+    animation: fadeUp 0.6s 0.3s ease both;
+  }
+
+  .btn-primary {
+    background: var(--green);
+    color: var(--bg);
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 0.85rem 2rem;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+  }
+
+  .btn-primary:hover { background: var(--green2); transform: translateY(-2px); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--white);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.85rem 2rem;
+    border-radius: 4px;
+    border: 1px solid var(--border2);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover { border-color: var(--green); color: var(--green); }
+
+  /* Stats row */
+  .hero-stats {
+    display: flex;
+    gap: 3rem;
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+    animation: fadeUp 0.6s 0.4s ease both;
+  }
+
+  .stat-item { display: flex; flex-direction: column; gap: 0.25rem; }
+
+  .stat-num {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--green);
+    line-height: 1;
+  }
+
+  .stat-label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── PROBLEMA / SOLUCIÓN ── */
+  .section-header {
+    text-align: center;
+    margin-bottom: 4rem;
+  }
+
+  .section-tag {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--green);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  h2 {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+  }
+
+  #problema {
+    padding: 7rem 3rem;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .problema-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .problema-card {
+    background: rgba(255,60,60,0.04);
+    border: 1px solid rgba(255,60,60,0.15);
+    border-radius: 8px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+
+  .problema-card:hover { border-color: rgba(255,60,60,0.35); }
+
+  .problema-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: linear-gradient(180deg, #ff3c3c, transparent);
+  }
+
+  .problema-icon { font-size: 1.75rem; margin-bottom: 1rem; }
+
+  .problema-card h3 {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--white);
+  }
+
+  .problema-card p { color: var(--muted); font-size: 0.9rem; }
+
+  /* Solución */
+  #solucion {
+    padding: 7rem 3rem;
+  }
+
+  .solucion-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .solucion-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 3rem;
+  }
+
+  .sol-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+  }
+
+  .sol-card:hover {
+    border-color: var(--green);
+    transform: translateY(-4px);
+    background: var(--bg3);
+  }
+
+  .sol-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--green), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .sol-card:hover::after { opacity: 1; }
+
+  .sol-number {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--green);
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+    display: block;
+  }
+
+  .sol-card h3 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .sol-card p { color: var(--muted); font-size: 0.875rem; line-height: 1.6; }
+
+  /* ── ARQUITECTURA ── */
+  #arquitectura {
+    padding: 7rem 3rem;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .arch-inner { max-width: 1100px; margin: 0 auto; }
+
+  .arch-flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow-x: auto;
+    padding: 2rem 0;
+    margin-top: 2rem;
+  }
+
+  .arch-node {
+    flex-shrink: 0;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    text-align: center;
+    min-width: 130px;
+    transition: all 0.25s;
+    cursor: default;
+  }
+
+  .arch-node:hover {
+    border-color: var(--green);
+    background: rgba(0,232,122,0.05);
+    transform: translateY(-3px);
+  }
+
+  .arch-node-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+
+  .arch-node-label {
+    font-family: var(--font-display);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--white);
+    line-height: 1.3;
+  }
+
+  .arch-node-sub {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    margin-top: 0.25rem;
+  }
+
+  .arch-arrow {
+    flex-shrink: 0;
+    width: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--green);
+    font-size: 1.2rem;
+    opacity: 0.6;
+  }
+
+  /* Screenshot placeholder */
+  .n8n-screenshot {
+    margin-top: 3rem;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg3);
+    position: relative;
+  }
+
+  .screenshot-bar {
+    background: rgba(0,232,122,0.06);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #febc2e; }
+  .dot-g { background: #28c840; }
+
+  .screenshot-label {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-left: 0.5rem;
+  }
+
+  .screenshot-placeholder {
+    min-height: 260px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1rem;
+    color: var(--muted);
+    padding: 3rem;
+  }
+
+  .screenshot-placeholder p {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    border: 1px dashed var(--border2);
+    padding: 1rem 2rem;
+    border-radius: 6px;
+    text-align: center;
+  }
+
+  /* ── COMANDOS ── */
+  #comandos {
+    padding: 7rem 3rem;
+  }
+
+  .comandos-inner { max-width: 1100px; margin: 0 auto; }
+
+  .comandos-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 3rem;
+  }
+
+  .comando-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    display: flex;
+    gap: 1.25rem;
+    align-items: flex-start;
+    transition: all 0.25s;
+  }
+
+  .comando-card:hover {
+    border-color: var(--border2);
+    background: var(--bg3);
+  }
+
+  .comando-tag {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--bg);
+    background: var(--green);
+    padding: 0.3rem 0.75rem;
+    border-radius: 4px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 0.1rem;
+  }
+
+  .comando-tag.voz {
+    background: #7c6af7;
+    color: white;
+  }
+
+  .comando-tag.sheets {
+    background: #1a73e8;
+    color: white;
+  }
+
+  .comando-tag.admin {
+    background: var(--muted);
+    color: var(--bg);
+  }
+
+  .comando-info h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.95rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .comando-info p { color: var(--muted); font-size: 0.85rem; line-height: 1.5; }
+
+  .comando-example {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--green);
+    background: rgba(0,232,122,0.06);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.35rem 0.6rem;
+    margin-top: 0.5rem;
+    display: inline-block;
+  }
+
+  /* ── CÓMO PROBARLO ── */
+  #probar {
+    padding: 7rem 3rem;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .probar-inner { max-width: 1100px; margin: 0 auto; }
+
+  .steps-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-top: 3rem;
+    counter-reset: steps;
+  }
+
+  .step-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.75rem 1.5rem;
+    position: relative;
+    counter-increment: steps;
+    transition: border-color 0.3s;
+  }
+
+  .step-card:hover { border-color: var(--green); }
+
+  .step-card::before {
+    content: '0' counter(steps);
+    font-family: var(--font-display);
+    font-size: 3rem;
+    font-weight: 800;
+    color: rgba(0,232,122,0.08);
+    position: absolute;
+    top: 1rem; right: 1.25rem;
+    line-height: 1;
+  }
+
+  .step-card h4 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: var(--green);
+  }
+
+  .step-card p { color: var(--muted); font-size: 0.85rem; }
+
+  .step-card code {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--green);
+    background: rgba(0,232,122,0.06);
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    display: inline-block;
+    margin-top: 0.5rem;
+  }
+
+  /* Chat demo */
+  .chat-demo {
+    margin-top: 4rem;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    max-width: 520px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .chat-header {
+    background: rgba(0,232,122,0.06);
+    border-bottom: 1px solid var(--border);
+    padding: 1rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .chat-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: var(--green);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+  }
+
+  .chat-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+
+  .chat-status { font-size: 0.75rem; color: var(--green); }
+
+  .chat-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 0.75rem; }
+
+  .msg {
+    max-width: 85%;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    animation: msgIn 0.3s ease both;
+  }
+
+  @keyframes msgIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg-user {
+    background: var(--green);
+    color: var(--bg);
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+    font-weight: 500;
+  }
+
+  .msg-bot {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    color: var(--white);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+  }
+
+  .msg-bot strong { color: var(--green); }
+
+  /* ── EQUIPO ── */
+  #equipo {
+    padding: 7rem 3rem;
+  }
+
+  .equipo-inner { max-width: 1100px; margin: 0 auto; }
+
+  .equipo-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    margin-top: 3rem;
+  }
+
+  .member-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .member-card:hover {
+    border-color: var(--green);
+    transform: translateY(-4px);
+  }
+
+  .member-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 60%; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--green), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .member-card:hover::before { opacity: 1; }
+
+  .member-avatar {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: var(--bg3);
+    border: 2px solid var(--border2);
+    margin: 0 auto 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+  }
+
+  .member-name {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .member-role {
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    color: var(--green);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+
+  .member-desc { color: var(--muted); font-size: 0.85rem; line-height: 1.6; }
+
+  /* Editable fields */
+  .editable {
+    border-bottom: 1px dashed var(--border2);
+    cursor: text;
+    transition: border-color 0.2s;
+    outline: none;
+    min-width: 40px;
+    display: inline-block;
+  }
+
+  .editable:focus { border-color: var(--green); }
+  .editable:empty::before { content: attr(data-placeholder); color: var(--muted); opacity: 0.5; }
+
+  /* ── NOSOTROS ── */
+  #nosotros {
+    padding: 7rem 3rem;
+    background: var(--bg2);
+    border-top: 1px solid var(--border);
+  }
+
+  .nosotros-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: start;
+  }
+
+  .nosotros-left h2 { text-align: left; }
+
+  .nosotros-body {
+    color: var(--muted);
+    font-size: 1rem;
+    line-height: 1.8;
+    margin-top: 1.5rem;
+  }
+
+  .nosotros-body p { margin-bottom: 1rem; }
+
+  .nosotros-right { display: flex; flex-direction: column; gap: 1.25rem; }
+
+  .fact-row {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    padding: 1.25rem;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: border-color 0.3s;
+  }
+
+  .fact-row:hover { border-color: var(--border2); }
+
+  .fact-icon { font-size: 1.5rem; flex-shrink: 0; }
+
+  .fact-label {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 0.2rem;
+  }
+
+  .fact-value {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--white);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 2rem 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+    z-index: 1;
+  }
+
+  .footer-logo {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1rem;
+    color: var(--green);
+  }
+
+  .footer-copy { font-size: 0.8rem; color: var(--muted); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    #inicio { padding: 7rem 1.5rem 4rem; }
+    .hero-stats { gap: 1.5rem; flex-wrap: wrap; }
+    section { padding-left: 1.5rem !important; padding-right: 1.5rem !important; }
+    .problema-grid, .solucion-grid, .equipo-grid, .comandos-grid { grid-template-columns: 1fr; }
+    .steps-grid { grid-template-columns: 1fr 1fr; }
+    .nosotros-inner { grid-template-columns: 1fr; gap: 3rem; }
+    .arch-flow { gap: 0; }
+  }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+</style>
 </head>
 <body>
 
-    <header class="navbar">
-        <div class="container nav-container">
-            <div class="logo">Logis<span>IA</span></div>
-            <nav>
-                <ul class="nav-links">
-                    <li><a href="#inicio">Solución</a></li>
-                    <li><a href="#impacto">Impacto</a></li>
-                    <li><a href="#demo">Demo</a></li>
-                </ul>
-            </nav>
-            <div class="nav-actions">
-                <a href="#login" class="btn btn-outline">Acceso</a>
-                <a href="#demo" class="btn btn-primary btn-shine">Demo Gratis</a>
-            </div>
-        </div>
-    </header>
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">🗺️ Route<span>Bot</span></div>
+  <ul class="nav-links">
+    <li><a href="#inicio">Inicio</a></li>
+    <li><a href="#solucion">Solución</a></li>
+    <li><a href="#comandos">Comandos</a></li>
+    <li><a href="#probar">Probar</a></li>
+    <li><a href="#equipo">Equipo</a></li>
+  </ul>
+  <a href="#probar" class="nav-cta">Probar ahora →</a>
+</nav>
 
-    <section id="inicio" class="hero">
-        <div class="container hero-container">
-            <div class="hero-content">
-                <span class="badge">Nuevo Motor TSP v2.5</span>
-                <h1>Inteligencia Artificial para tu Logística</h1>
-                <p>Automatiza la planeación de tu flota con algoritmos avanzados. Reduce costos operativos, mejora tiempos de entrega y conecta a tus operadores en segundos.</p>
-                <div class="hero-buttons">
-                    <a href="#demo" class="btn btn-primary btn-large btn-shine">Ver Demo en Vivo</a>
-                </div>
-            </div>
-        </div>
-    </section>
+<!-- HERO / LANDING -->
+<section id="inicio">
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
 
-    <section id="impacto" class="kpi-section">
-        <div class="container">
-            <div class="kpi-grid">
-                <div class="kpi-card">
-                    <div class="kpi-icon icon-blue">📉</div>
-                    <div class="kpi-data">
-                        <div class="kpi-number">-45<span class="unit">km</span></div>
-                        <div class="kpi-label">Ahorro Promedio por Ruta</div>
-                    </div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-icon icon-blue">⏱️</div>
-                    <div class="kpi-data">
-                        <div class="kpi-number">2.5<span class="unit">hrs</span></div>
-                        <div class="kpi-label">Tiempo Optimizado Diario</div>
-                    </div>
-                </div>
-                <div class="kpi-card">
-                    <div class="kpi-icon icon-blue">💰</div>
-                    <div class="kpi-data">
-                        <div class="kpi-number">850<span class="unit">MXN</span></div>
-                        <div class="kpi-label">Ahorro Combustible/Día</div>
-                    </div>
-                </div>
-                <div class="kpi-card kpi-highlight">
-                    <div class="kpi-icon icon-green">🍃</div>
-                    <div class="kpi-data">
-                        <div class="kpi-number">-12<span class="unit">%</span></div>
-                        <div class="kpi-label">Reducción CO₂ Estimada</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+  <div class="hero-tag">🚀 Hackathon 2025 — Logística Inteligente</div>
 
-    <section id="como-funciona" class="como-funciona">
-        <div class="container">
-            <div class="section-header">
-                <h2>Un sistema profesional listo para producción</h2>
-                <p>Nuestra plataforma SaaS se integra en minutos sin instalaciones complejas.</p>
-            </div>
-            <div class="grid-tarjetas">
-                <div class="tarjeta">
-                    <div class="tarjeta-head">
-                        <div class="tarjeta-icon">📂</div>
-                        <span class="step-num">Paso 1</span>
-                    </div>
-                    <h3>Entrada Múltiple</h3>
-                    <p>Carga masiva de direcciones vía <b>archivo CSV</b> o envía ubicaciones directamente a nuestro bot corporativo de <b>WhatsApp</b>.</p>
-                </div>
-                <div class="tarjeta">
-                    <div class="tarjeta-head">
-                        <div class="tarjeta-icon">🧠</div>
-                        <span class="step-num">Paso 2</span>
-                    </div>
-                    <h3>Motor de Optimización TSP</h3>
-                    <p>Nuestra IA cruza datos de tráfico en tiempo real, capacidades y ventanas de entrega para diseñar la ruta óptima.</p>
-                </div>
-                <div class="tarjeta">
-                    <div class="tarjeta-head">
-                        <div class="tarjeta-icon">📲</div>
-                        <span class="step-num">Paso 3</span>
-                    </div>
-                    <h3>Despliegue Inmediato</h3>
-                    <p>Tus operadores reciben la ruta paso a paso en <b>Telegram</b> o <b>WhatsApp</b>, incluyendo mapas dinámicos.</p>
-                </div>
-            </div>
-        </div>
-    </section>
+  <h1>Rutas optimizadas.<br>Desde <span class="accent">Telegram.</span></h1>
 
-    <section id="demo" class="demo-section">
-        <div class="container">
-            <div class="section-header">
-                <h2>Demo en Vivo: Optimización en CDMX</h2>
-                <p>Compara el impacto visual de nuestro algoritmo de Inteligencia Artificial.</p>
-            </div>
-            <div class="demo-container">
-                <div class="demo-col">
-                    <h4 class="route-title bad-title">Ruta Tradicional (Manual)</h4>
-                    <div class="map-placeholder">
-                        <div class="image-placeholder-text">insertar imagen aqui</div>
-                        <div class="map-overlay bad-overlay">
-                            <span class="stat">Distancia: 120 km</span>
-                            <span class="stat">Tiempo: 4h 30m</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="demo-col">
-                    <h4 class="route-title good-title">Ruta Optimizada LogisIA</h4>
-                    <div class="map-placeholder map-good">
-                        <div class="image-placeholder-text">insertar imagen aqui</div>
-                        <div class="map-overlay good-overlay">
-                            <span class="stat">Distancia: 75 km</span>
-                            <span class="stat">Tiempo: 2h 00m</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="ai-narration">
-                <div class="ai-avatar">🤖 LogisIA Insight</div>
-                <p>"Detecté un embotellamiento en Circuito Interior a las 11:30 AM. He reorganizado las 4 entregas del Norte para realizarlas antes de esa hora, optimizando la ruta y ahorrando 2.5 horas de tiempo total."</p>
-            </div>
-        </div>
-    </section>
+  <p class="hero-sub">
+    Un chatbot conversacional que toma tus direcciones, aplica inteligencia artificial y te devuelve la ruta más eficiente en segundos — con voz, texto o desde Google Sheets.
+  </p>
 
-    <footer class="fat-footer">
-        <div class="container footer-grid">
-            <div class="footer-brand">
-                <h3>Logis<span>IA</span></h3>
-                <p>Plataforma SaaS de optimización de rutas logística líder en el mercado mexicano.</p>
-            </div>
-            <div class="footer-links">
-                <h4>Solución</h4>
-                <ul>
-                    <li>Optimización TSP</li>
-                    <li>Métricas de CO₂</li>
-                    <li>WhatsApp API</li>
-                </ul>
-            </div>
-            <div class="footer-links">
-                <h4>Hackatón</h4>
-                <ul>
-                    <li>Bécalos 2025-2026</li>
-                    <li>Reto Traxion</li>
-                </ul>
-            </div>
-        </div>
-        <div class="footer-bottom">
-            &copy; 2026 LogisIA Prototipo. Hackatón Bécalos. Equipo X.
-        </div>
-    </footer>
+  <div class="hero-actions">
+    <a href="https://t.me/NOMBRE_DE_TU_BOT" target="_blank" class="btn-primary">
+      ✈️ Abrir en Telegram
+    </a>
+    <a href="#solucion" class="btn-secondary">
+      Ver cómo funciona ↓
+    </a>
+  </div>
 
+  <div class="hero-stats">
+    <div class="stat-item">
+      <span class="stat-num">3</span>
+      <span class="stat-label">Canales de entrada</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">~8s</span>
+      <span class="stat-label">Tiempo de respuesta</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">30%</span>
+      <span class="stat-label">Ahorro promedio en km</span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-num">n8n</span>
+      <span class="stat-label">Motor de automatización</span>
+    </div>
+  </div>
+</section>
+
+<!-- PROBLEMA -->
+<section id="problema">
+  <div style="max-width:1100px;margin:0 auto;">
+    <div class="section-header reveal">
+      <span class="section-tag">// el problema</span>
+      <h2>La logística de última milla<br>está rota</h2>
+    </div>
+
+    <div class="problema-grid">
+      <div class="problema-card reveal">
+        <div class="problema-icon">📋</div>
+        <h3>Rutas planeadas a mano</h3>
+        <p>Los repartidores ordenan sus paradas manualmente, sin considerar tráfico, distancia real ni ventanas de tiempo. Tiempo perdido garantizado.</p>
+      </div>
+      <div class="problema-card reveal">
+        <div class="problema-icon">⛽</div>
+        <h3>Combustible desperdiciado</h3>
+        <p>Una ruta mal ordenada puede significar hasta 40% más de km recorridos. Eso se traduce directamente en costos y emisiones de CO₂ evitables.</p>
+      </div>
+      <div class="problema-card reveal">
+        <div class="problema-icon">📞</div>
+        <h3>Sin visibilidad en tiempo real</h3>
+        <p>Los coordinadores no saben qué está pasando en campo. Los clientes no saben cuándo llega su entrega. Todo se gestiona por llamadas.</p>
+      </div>
+      <div class="problema-card reveal">
+        <div class="problema-icon">🔧</div>
+        <h3>Herramientas inaccesibles</h3>
+        <p>Los sistemas de optimización de rutas cuestan miles de pesos al mes y requieren capacitación. Las PyMEs no tienen acceso a ellos.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOLUCIÓN -->
+<section id="solucion">
+  <div class="solucion-inner">
+    <div class="section-header reveal">
+      <span class="section-tag">// la solución</span>
+      <h2>Un bot que optimiza,<br>explica y recuerda</h2>
+    </div>
+
+    <div class="solucion-grid">
+      <div class="sol-card reveal">
+        <span class="sol-number">01 — ENTRADA MULTI-CANAL</span>
+        <h3>Texto, voz o spreadsheet</h3>
+        <p>El usuario puede mandar sus destinos como texto libre, una nota de voz, o desde una hoja de Google Sheets. El bot entiende los tres canales.</p>
+      </div>
+      <div class="sol-card reveal">
+        <span class="sol-number">02 — IA GEOCODIFICADORA</span>
+        <h3>Gemini extrae las direcciones</h3>
+        <p>No importa cómo escribas la dirección. Gemini identifica los lugares, los normaliza y los convierte en coordenadas exactas con la Geocoding API.</p>
+      </div>
+      <div class="sol-card reveal">
+        <span class="sol-number">03 — OPTIMIZACIÓN TSP</span>
+        <h3>Algoritmo con tráfico real</h3>
+        <p>Distance Matrix API con tráfico en tiempo real + algoritmo Nearest Neighbor calculan el orden óptimo de visita, respetando prioridades y ventanas horarias.</p>
+      </div>
+      <div class="sol-card reveal">
+        <span class="sol-number">04 — REGLAS DE NEGOCIO</span>
+        <h3>Zonas, horarios, capacidad</h3>
+        <p>El sistema aplica restricciones reales: prioridad alta va primero, ventanas de entrega se respetan, rutas con más de 15 paradas se alertan.</p>
+      </div>
+      <div class="sol-card reveal">
+        <span class="sol-number">05 — MEMORIA CONVERSACIONAL</span>
+        <h3>El bot recuerda tu ruta</h3>
+        <p>Puedes agregar, quitar o modificar paradas en conversación natural. El bot mantiene el contexto entre mensajes y recalcula automáticamente.</p>
+      </div>
+      <div class="sol-card reveal">
+        <span class="sol-number">06 — MÉTRICAS DE IMPACTO</span>
+        <h3>Km, CO₂ y tiempo ahorrado</h3>
+        <p>Cada ruta muestra el ahorro logrado vs la ruta sin optimizar. El historial diario se guarda para análisis y reportes automáticos.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ARQUITECTURA -->
+<section id="arquitectura">
+  <div class="arch-inner">
+    <div class="section-header reveal">
+      <span class="section-tag">// arquitectura técnica</span>
+      <h2>Cómo funciona por dentro</h2>
+    </div>
+
+    <div class="arch-flow reveal">
+      <div class="arch-node">
+        <div class="arch-node-icon">✈️</div>
+        <div class="arch-node-label">Telegram</div>
+        <div class="arch-node-sub">texto / voz</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">
+        <div class="arch-node-icon">📊</div>
+        <div class="arch-node-label">Google Sheets</div>
+        <div class="arch-node-sub">batch trigger</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">
+        <div class="arch-node-icon">⚡</div>
+        <div class="arch-node-label">n8n Webhook</div>
+        <div class="arch-node-sub">orquestador</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">
+        <div class="arch-node-icon">🤖</div>
+        <div class="arch-node-label">Gemini AI</div>
+        <div class="arch-node-sub">extracción + resumen</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">
+        <div class="arch-node-icon">📍</div>
+        <div class="arch-node-label">Google Maps</div>
+        <div class="arch-node-sub">geocoding + matrix</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">
+        <div class="arch-node-icon">🧮</div>
+        <div class="arch-node-label">TSP Engine</div>
+        <div class="arch-node-sub">nearest neighbor</div>
+      </div>
+      <div class="arch-arrow">→</div>
+      <div class="arch-node">
+        <div class="arch-node-icon">✅</div>
+        <div class="arch-node-label">Ruta + Mapa</div>
+        <div class="arch-node-sub">link directo</div>
+      </div>
+    </div>
+
+    <!-- Placeholder captura n8n -->
+    <div class="n8n-screenshot reveal">
+      <div class="screenshot-bar">
+        <div class="dot dot-r"></div>
+        <div class="dot dot-y"></div>
+        <div class="dot dot-g"></div>
+        <span class="screenshot-label">n8n — RouteBot Workflow</span>
+      </div>
+      <div class="screenshot-placeholder">
+        <span style="font-size:2rem">🖼️</span>
+        <p>
+          [ Aquí va la captura de pantalla de tu flujo en n8n ]<br>
+          Reemplaza este bloque con una imagen de tu workflow
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMANDOS -->
+<section id="comandos">
+  <div class="comandos-inner">
+    <div class="section-header reveal">
+      <span class="section-tag">// comandos del bot</span>
+      <h2>Todo lo que puedes hacer<br>desde Telegram</h2>
+    </div>
+
+    <div class="comandos-grid">
+
+      <div class="comando-card reveal">
+        <span class="comando-tag">TEXTO</span>
+        <div class="comando-info">
+          <h4>Solicitar ruta nueva</h4>
+          <p>Escribe tus destinos en texto libre. No importa el formato, Gemini los interpreta.</p>
+          <code>"Ruta: Reforma 222, Zócalo, Tlalpan 500"</code>
+        </div>
+      </div>
+
+      <div class="comando-card reveal">
+        <span class="comando-tag voz">🎙️ VOZ</span>
+        <div class="comando-info">
+          <h4>Nota de voz</h4>
+          <p>Graba un audio con tus destinos. Gemini transcribe y extrae las direcciones automáticamente.</p>
+          <code>"Necesito ir a Walmart Insurgentes y al Zócalo"</code>
+        </div>
+      </div>
+
+      <div class="comando-card reveal">
+        <span class="comando-tag">TEXTO</span>
+        <div class="comando-info">
+          <h4>Agregar parada</h4>
+          <p>Añade una nueva dirección a tu ruta activa. El bot recalcula automáticamente.</p>
+          <code>"Agrega Central de Abasto"</code>
+        </div>
+      </div>
+
+      <div class="comando-card reveal">
+        <span class="comando-tag">TEXTO</span>
+        <div class="comando-info">
+          <h4>Quitar parada</h4>
+          <p>Elimina una parada de tu ruta actual por nombre o dirección.</p>
+          <code>"Quita Tlalpan"</code>
+        </div>
+      </div>
+
+      <div class="comando-card reveal">
+        <span class="comando-tag admin">/status</span>
+        <div class="comando-info">
+          <h4>Ver ruta activa</h4>
+          <p>Muestra todas las paradas de tu sesión actual con el orden optimizado.</p>
+          <code>/status</code>
+        </div>
+      </div>
+
+      <div class="comando-card reveal">
+        <span class="comando-tag admin">/cancelar</span>
+        <div class="comando-info">
+          <h4>Cancelar sesión</h4>
+          <p>Borra tu ruta activa y reinicia la conversación desde cero.</p>
+          <code>/cancelar</code>
+        </div>
+      </div>
+
+      <div class="comando-card reveal">
+        <span class="comando-tag sheets">📊 SHEETS</span>
+        <div class="comando-info">
+          <h4>Carga desde Google Sheets</h4>
+          <p>Agrega una fila a tu hoja con cliente, dirección, prioridad y ventana horaria. El bot la detecta en 60 segundos.</p>
+          <code>cliente | dirección | prioridad | hora</code>
+        </div>
+      </div>
+
+      <div class="comando-card reveal">
+        <span class="comando-tag admin">/recalcular</span>
+        <div class="comando-info">
+          <h4>Recalcular con tráfico actual</h4>
+          <p>Fuerza un recálculo de tu ruta considerando el tráfico en tiempo real del momento.</p>
+          <code>/recalcular</code>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- CÓMO PROBARLO -->
+<section id="probar">
+  <div class="probar-inner">
+    <div class="section-header reveal">
+      <span class="section-tag">// cómo probarlo</span>
+      <h2>En 4 pasos ya tienes<br>tu primera ruta</h2>
+    </div>
+
+    <div class="steps-grid">
+      <div class="step-card reveal">
+        <h4>Abre el bot</h4>
+        <p>Busca <strong style="color:var(--white)">@NOMBRE_DE_TU_BOT</strong> en Telegram o usa el botón de arriba.</p>
+        <code>t.me/NOMBRE_DE_TU_BOT</code>
+      </div>
+      <div class="step-card reveal">
+        <h4>Manda tus destinos</h4>
+        <p>Escribe tus paradas separadas por comas, o manda una nota de voz.</p>
+        <code>"Reforma 222, Zócalo, Tlalpan"</code>
+      </div>
+      <div class="step-card reveal">
+        <h4>Espera ~8 segundos</h4>
+        <p>El bot geocodifica, optimiza con tráfico real y genera tu ruta.</p>
+        <code>Procesando ruta... 🔄</code>
+      </div>
+      <div class="step-card reveal">
+        <h4>Recibe tu ruta</h4>
+        <p>Recibes el orden optimizado, métricas de ahorro y un link directo a Google Maps.</p>
+        <code>Abrir en Maps →</code>
+      </div>
+    </div>
+
+    <!-- Chat demo -->
+    <div class="chat-demo reveal">
+      <div class="chat-header">
+        <div class="chat-avatar">🗺️</div>
+        <div>
+          <div class="chat-name">RouteBot</div>
+          <div class="chat-status">● En línea</div>
+        </div>
+      </div>
+      <div class="chat-body">
+        <div class="msg msg-user">Ruta: Reforma 222, Zócalo CDMX, Tlalpan 500, Central de Abasto</div>
+        <div class="msg msg-bot">
+          🗺️ <strong>Ruta optimizada para 4 paradas</strong><br><br>
+          1. Paseo de la Reforma 222<br>
+          2. Central de Abasto<br>
+          3. Tlalpan 500<br>
+          4. Zócalo, CDMX<br><br>
+          ⏱ Tiempo total: <strong>58 min</strong><br>
+          ✅ Ahorro: <strong>22 min (27%)</strong><br>
+          🌿 CO₂ evitado: <strong>1.4 kg</strong>
+        </div>
+        <div class="msg msg-user">Agrega Xochimilco</div>
+        <div class="msg msg-bot">
+          ✅ <strong>Parada añadida.</strong> Recalculando con 5 paradas...<br><br>
+          Nueva ruta actualizada 🔄<br>
+          ⏱ Tiempo total: <strong>72 min</strong><br>
+          ✅ Ahorro: <strong>31 min (30%)</strong>
+        </div>
+        <div class="msg msg-user">/status</div>
+        <div class="msg msg-bot">
+          📍 <strong>Tu ruta activa — 5 paradas:</strong><br><br>
+          1. Reforma 222<br>
+          2. Central de Abasto<br>
+          3. Xochimilco<br>
+          4. Tlalpan 500<br>
+          5. Zócalo
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EQUIPO -->
+<section id="equipo">
+  <div class="equipo-inner">
+    <div class="section-header reveal">
+      <span class="section-tag">// equipo de trabajo</span>
+      <h2>Las personas detrás<br>del proyecto</h2>
+    </div>
+
+    <div class="equipo-grid">
+      <div class="member-card reveal">
+        <div class="member-avatar">👤</div>
+        <div class="member-name">
+          <span class="editable" contenteditable="true" data-placeholder="Tu nombre aquí"></span>
+        </div>
+        <div class="member-role">
+          <span class="editable" contenteditable="true" data-placeholder="Rol / Área"></span>
+        </div>
+        <p class="member-desc">
+          <span class="editable" contenteditable="true" data-placeholder="Descripción breve del integrante y su contribución al proyecto..."></span>
+        </p>
+      </div>
+
+      <div class="member-card reveal">
+        <div class="member-avatar">👤</div>
+        <div class="member-name">
+          <span class="editable" contenteditable="true" data-placeholder="Tu nombre aquí"></span>
+        </div>
+        <div class="member-role">
+          <span class="editable" contenteditable="true" data-placeholder="Rol / Área"></span>
+        </div>
+        <p class="member-desc">
+          <span class="editable" contenteditable="true" data-placeholder="Descripción breve del integrante y su contribución al proyecto..."></span>
+        </p>
+      </div>
+
+      <div class="member-card reveal">
+        <div class="member-avatar">👤</div>
+        <div class="member-name">
+          <span class="editable" contenteditable="true" data-placeholder="Tu nombre aquí"></span>
+        </div>
+        <div class="member-role">
+          <span class="editable" contenteditable="true" data-placeholder="Rol / Área"></span>
+        </div>
+        <p class="member-desc">
+          <span class="editable" contenteditable="true" data-placeholder="Descripción breve del integrante y su contribución al proyecto..."></span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOBRE NOSOTROS -->
+<section id="nosotros">
+  <div class="nosotros-inner">
+    <div class="nosotros-left reveal">
+      <span class="section-tag">// sobre nosotros</span>
+      <h2 style="text-align:left">Por qué<br>construimos esto</h2>
+      <div class="nosotros-body">
+        <p>
+          <span class="editable" contenteditable="true" data-placeholder="Cuenten su historia: de dónde vienen, qué los motivó a construir este proyecto, qué problema personal o profesional identificaron...">Somos un equipo apasionado por la logística y la tecnología. Identificamos que miles de pequeñas empresas en México pierden tiempo y dinero planeando rutas manualmente, sin acceso a herramientas profesionales de optimización.</span>
+        </p>
+        <p>
+          <span class="editable" contenteditable="true" data-placeholder="Hablen de su enfoque técnico, por qué eligieron n8n, Telegram y Gemini...">Decidimos resolver este problema con herramientas accesibles: n8n como motor de automatización, Telegram como canal que ya usan millones de repartidores en México, y Gemini como cerebro que entiende el lenguaje natural.</span>
+        </p>
+        <p>
+          <span class="editable" contenteditable="true" data-placeholder="Cuál es su visión a futuro del proyecto...">Nuestra visión es democratizar la optimización logística para que cualquier PyME pueda acceder a ella desde su celular, sin necesidad de software especializado ni capacitación técnica.</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="nosotros-right reveal">
+      <div class="fact-row">
+        <div class="fact-icon">⚡</div>
+        <div>
+          <div class="fact-label">Motor de automatización</div>
+          <div class="fact-value">n8n (self-hosted / cloud)</div>
+        </div>
+      </div>
+      <div class="fact-row">
+        <div class="fact-icon">🤖</div>
+        <div>
+          <div class="fact-label">Modelo de IA</div>
+          <div class="fact-value">Google Gemini 1.5 Flash / Pro</div>
+        </div>
+      </div>
+      <div class="fact-row">
+        <div class="fact-icon">📍</div>
+        <div>
+          <div class="fact-label">Geocodificación y rutas</div>
+          <div class="fact-value">Google Maps Platform</div>
+        </div>
+      </div>
+      <div class="fact-row">
+        <div class="fact-icon">✈️</div>
+        <div>
+          <div class="fact-label">Canal principal</div>
+          <div class="fact-value">Telegram Bot API</div>
+        </div>
+      </div>
+      <div class="fact-row">
+        <div class="fact-icon">📊</div>
+        <div>
+          <div class="fact-label">Almacenamiento</div>
+          <div class="fact-value">Google Sheets (historial + sesiones)</div>
+        </div>
+      </div>
+      <div class="fact-row">
+        <div class="fact-icon">🧮</div>
+        <div>
+          <div class="fact-label">Algoritmo de optimización</div>
+          <div class="fact-value">TSP — Nearest Neighbor</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">🗺️ RouteBot</div>
+  <div class="footer-copy">Construido con n8n · Gemini · Google Maps · Telegram — Hackathon 2025</div>
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 60);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => observer.observe(el));
+
+  // Highlight editable fields on load
+  document.querySelectorAll('.editable').forEach(el => {
+    el.addEventListener('focus', () => el.style.borderColor = 'var(--green)');
+    el.addEventListener('blur', () => el.style.borderColor = '');
+  });
+
+  // Smooth nav active state
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-links a');
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 120) current = s.id;
+    });
+    navLinks.forEach(a => {
+      a.style.color = a.getAttribute('href') === '#' + current
+        ? 'var(--green)' : '';
+    });
+  });
+</script>
 </body>
 </html>
